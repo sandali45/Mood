@@ -49,10 +49,10 @@ const selectedDay = ref(null);
 // Moods
 const moods = ref({});
 const moodColors = {
-  😊: "#FFD6E8", // happy
-  😌: "#D6F5E3", // calm
-  😢: "#D6E0FF", // sad
-  😴: "#FFF5CC"  // tired
+ "#FFD6E8", // happy
+"#D6F5E3", // calm
+"#D6E0FF", // sad
+"#FFF5CC"  // tired
 };
 
 const monthNames = [
