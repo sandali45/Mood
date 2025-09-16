@@ -1,38 +1,54 @@
 <template>
   <div class="calendar">
     <h1 class="title">🌸 Pastel Mood Calendar</h1>
+
+    <!-- Month Header -->
     <div class="header">
       <button @click="prevMonth">←</button>
       <h2>{{ monthNames[currentMonth] }} {{ currentYear }}</h2>
       <button @click="nextMonth">→</button>
     </div>
 
+    <!-- Weekdays -->
     <div class="weekdays">
       <div v-for="day in weekDays" :key="day" class="weekday">{{ day }}</div>
     </div>
 
+    <!-- Calendar Grid -->
     <div class="grid">
       <div
         v-for="(day, index) in calendarDays"
         :key="index"
         class="day"
+        v-if="!isNaN(day)"
         @click="selectDay(day)"
-        :style="{ backgroundColor: moodColors[moods[getKey(day)]] || '#fff' }"
+        :style="{ backgroundColor: moods[getKey(day)] || '#fff' }"
       >
         {{ day.getDate() }}
       </div>
+      <div v-else class="day empty"></div>
     </div>
 
+    <!-- Mood Picker -->
     <div v-if="selectedDay" class="mood-picker">
       <h2>Select Mood for {{ selectedDay.toDateString() }}</h2>
       <button
         v-for="(color, mood) in moodColors"
         :key="mood"
-        @click="setMood(selectedDay, mood)"
+        @click="setMood(selectedDay, color)"
         :style="{ backgroundColor: color }"
       >
         {{ mood }}
       </button>
+    </div>
+
+    <!-- Mood Legend -->
+    <div class="legend">
+      <h3>🎨 Mood Legend</h3>
+      <div v-for="(color, mood) in moodColors" :key="mood" class="legend-item">
+        <span class="color-box" :style="{ backgroundColor: color }"></span>
+        <span>{{ mood }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -40,19 +56,17 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 
-// Month/year state
 const today = new Date();
 const currentMonth = ref(today.getMonth());
 const currentYear = ref(today.getFullYear());
 const selectedDay = ref(null);
 
-// Moods
 const moods = ref({});
 const moodColors = {
- "#FFD6E8", // happy
-"#D6F5E3", // calm
-"#D6E0FF", // sad
-"#FFF5CC"  // tired
+  "Happy": "#FFD6E8",  // pastel pink
+  "Calm": "#D6F5E3",   // pastel mint
+  "Sad": "#D6E0FF",    // pastel blue
+  "Tired": "#FFF5CC"   // pastel yellow
 };
 
 const monthNames = [
@@ -61,13 +75,11 @@ const monthNames = [
 ];
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// Load moods from localStorage
 onMounted(() => {
   const saved = localStorage.getItem("moods");
   if (saved) moods.value = JSON.parse(saved);
 });
 
-// Helpers
 function getKey(date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
@@ -76,8 +88,8 @@ function selectDay(day) {
   selectedDay.value = day;
 }
 
-function setMood(day, mood) {
-  moods.value[getKey(day)] = mood;
+function setMood(day, color) {
+  moods.value[getKey(day)] = color;
   localStorage.setItem("moods", JSON.stringify(moods.value));
   selectedDay.value = null;
 }
@@ -100,19 +112,18 @@ function nextMonth() {
   }
 }
 
-// Generate days for current month
 const calendarDays = computed(() => {
   const firstDay = new Date(currentYear.value, currentMonth.value, 1);
   const lastDay = new Date(currentYear.value, currentMonth.value + 1, 0);
 
   const days = [];
 
-  // Fill empty slots before first day
+  // Empty slots
   for (let i = 0; i < firstDay.getDay(); i++) {
-    days.push(new Date(NaN)); // empty
+    days.push(NaN);
   }
 
-  // Fill real days
+  // Real days
   for (let d = 1; d <= lastDay.getDate(); d++) {
     days.push(new Date(currentYear.value, currentMonth.value, d));
   }
@@ -166,7 +177,13 @@ const calendarDays = computed(() => {
 }
 
 .day:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
+}
+
+.empty {
+  background: transparent;
+  border: none;
+  cursor: default;
 }
 
 .mood-picker {
@@ -181,6 +198,25 @@ const calendarDays = computed(() => {
   cursor: pointer;
   font-weight: bold;
   transition: 0.2s;
-  font-size: 20px;
+}
+
+.legend {
+  margin-top: 30px;
+  text-align: left;
+  display: inline-block;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+}
+
+.color-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
 }
 </style>
