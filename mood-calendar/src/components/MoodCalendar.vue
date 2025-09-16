@@ -2,14 +2,14 @@
   <div class="calendar">
     <h1 class="title">🌸 Pastel Mood Calendar</h1>
 
-    <!-- Month Header -->
+    <!-- Month Navigation -->
     <div class="header">
       <button @click="prevMonth">←</button>
       <h2>{{ monthNames[currentMonth] }} {{ currentYear }}</h2>
       <button @click="nextMonth">→</button>
     </div>
 
-    <!-- Weekdays -->
+    <!-- Weekday Labels -->
     <div class="weekdays">
       <div v-for="day in weekDays" :key="day" class="weekday">{{ day }}</div>
     </div>
@@ -20,7 +20,7 @@
         v-for="(day, index) in calendarDays"
         :key="index"
         class="day"
-        v-if="!isNaN(day)"
+        v-if="day"
         @click="selectDay(day)"
         :style="{ backgroundColor: moods[getKey(day)] || '#fff' }"
       >
@@ -56,11 +56,13 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 
+// Current month/year
 const today = new Date();
 const currentMonth = ref(today.getMonth());
 const currentYear = ref(today.getFullYear());
 const selectedDay = ref(null);
 
+// Mood data
 const moods = ref({});
 const moodColors = {
   "Happy": "#FFD6E8",  // pastel pink
@@ -69,17 +71,20 @@ const moodColors = {
   "Tired": "#FFF5CC"   // pastel yellow
 };
 
+// Month & weekday names
 const monthNames = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December"
 ];
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+// Load saved moods
 onMounted(() => {
   const saved = localStorage.getItem("moods");
   if (saved) moods.value = JSON.parse(saved);
 });
 
+// Helpers
 function getKey(date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
@@ -94,6 +99,7 @@ function setMood(day, color) {
   selectedDay.value = null;
 }
 
+// Month navigation
 function prevMonth() {
   if (currentMonth.value === 0) {
     currentMonth.value = 11;
@@ -112,18 +118,19 @@ function nextMonth() {
   }
 }
 
+// Generate calendar days
 const calendarDays = computed(() => {
   const firstDay = new Date(currentYear.value, currentMonth.value, 1);
   const lastDay = new Date(currentYear.value, currentMonth.value + 1, 0);
 
   const days = [];
 
-  // Empty slots
+  // Empty slots for weekdays before first day
   for (let i = 0; i < firstDay.getDay(); i++) {
-    days.push(NaN);
+    days.push(null);
   }
 
-  // Real days
+  // Fill month days
   for (let d = 1; d <= lastDay.getDate(); d++) {
     days.push(new Date(currentYear.value, currentMonth.value, d));
   }
@@ -154,6 +161,14 @@ const calendarDays = computed(() => {
   margin-bottom: 10px;
 }
 
+.header button {
+  padding: 8px 15px;
+  border-radius: 10px;
+  border: none;
+  background: #a5d8ff;
+  cursor: pointer;
+}
+
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -174,10 +189,13 @@ const calendarDays = computed(() => {
   cursor: pointer;
   min-height: 50px;
   transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .day:hover {
-  transform: scale(1.05);
+  transform: scale(1.1);
 }
 
 .empty {
@@ -198,6 +216,7 @@ const calendarDays = computed(() => {
   cursor: pointer;
   font-weight: bold;
   transition: 0.2s;
+  font-size: 16px;
 }
 
 .legend {
